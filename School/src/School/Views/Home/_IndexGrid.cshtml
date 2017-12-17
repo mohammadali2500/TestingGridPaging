@@ -1,0 +1,16 @@
+﻿@model List<School.Controllers.Student>
+
+@(Html
+    .Grid(Model)
+    .Build(columns =>
+    {
+        columns.Add(model => Convert.ToInt32(model.StudentId)).Titled("Student Id");
+        columns.Add(model => model.StudentName).Titled("Student Name");
+    })
+    .Pageable(pager =>
+    {
+        pager.ProcessorType = GridProcessorType.Manual;
+        pager.TotalRows = ViewBag.TotalRows;
+        pager.RowsPerPage = ViewBag.RowsPerPage;
+    })
+)
