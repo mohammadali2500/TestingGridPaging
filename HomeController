@@ -1,0 +1,312 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+
+namespace School.Controllers
+{
+    public class HomeController : Controller
+    {
+        public IActionResult Index()
+        {
+            HttpContext.Session.Remove("StudentSC");
+
+            StudentViewModel svm = new StudentViewModel();
+            svm.IsValid = false;
+
+            return View(svm);
+        }
+
+        [HttpPost]
+        public IActionResult Index(StudentViewModel svm)
+        {
+            HttpContext.Session.Remove("StudentSC");
+
+            if (svm.SelectedNoOfRows == 0)
+            {
+                svm.SelectedNoOfRows = 10;
+            }
+            //HttpContext.Session.SetInt32("NoOfRows", svm.SelectedNoOfRows);
+            StudentSearchCriteria ssc = new StudentSearchCriteria();
+            ssc.NoOfRows = svm.SelectedNoOfRows;
+
+            if (svm.StudentId != null)
+            {
+                //HttpContext.Session.SetString("StudentId", svm.StudentId);
+                ssc.StudentId = svm.StudentId;
+            }
+            if (svm.StudentName != null)
+            {
+                //HttpContext.Session.SetString("StudentName", svm.StudentName);
+                ssc.StudentName = svm.StudentName;
+            }
+
+            SetObjectInSession("StudentSC", ssc);
+
+            svm.PopulateDD(svm.SelectedNoOfRows);
+            svm.IsValid = true;
+            return View(svm);
+        }
+
+        [HttpGet]
+        public ActionResult IndexGrid(Int32? page)
+        {
+            StudentViewModel svm = new StudentViewModel();
+            svm.GetAllStudents();
+
+            StudentSearchCriteria ssc = GetObjectFromSession<StudentSearchCriteria>("StudentSC");
+
+            //int? rows = HttpContext.Session.GetInt32("NoOfRows");
+            int? rows = ssc.NoOfRows;
+            ViewBag.RowsPerPage = ssc.NoOfRows;
+
+            //string stid = HttpContext.Session.GetString("StudentId");
+            //string stname = HttpContext.Session.GetString("StudentName");
+
+            //if (stid != null && stid != "")
+            //    svm.Students = svm.Students.Where(x => x.StudentId == stid).ToList();
+
+            //if (stname != null && stname != "")
+            //    svm.Students = svm.Students.Where(x => x.StudentName == stname).ToList();
+
+            if (ssc.StudentId != null && ssc.StudentId != "")
+                svm.Students = svm.Students.Where(x => x.StudentId == ssc.StudentId).ToList();
+
+            if (ssc.StudentName != null && ssc.StudentName != "")
+                svm.Students = svm.Students.Where(x => x.StudentName == ssc.StudentName).ToList();
+
+            ViewBag.TotalRows = svm.Students.Count();
+
+            svm.Students = svm.Students.Skip((page - 1 ?? 0) * (rows ?? 10)).Take(rows ?? 10).ToList();
+
+            return PartialView("_IndexGrid", svm.Students);
+        }
+
+        public void SetObjectInSession(string key, object value)
+        {
+            string val = JsonConvert.SerializeObject(value);
+            HttpContext.Session.SetString(key, val);
+        }
+
+        public T GetObjectFromSession<T>(string key)
+        {
+            T obj;
+            if (HttpContext.Session.GetString(key) != null)
+            {
+                obj = JsonConvert.DeserializeObject<T>(HttpContext.Session.GetString(key));
+                return obj;
+            }
+            else
+            {
+                obj = JsonConvert.DeserializeObject<T>(string.Empty);
+                return obj;
+            }
+        }
+    }
+
+
+    public class Student
+    {
+        public string StudentId { get; set; }
+
+        public string StudentName { get; set; }
+
+        public string StaffId { get; set; }
+
+        public string StaffName { get; set; }
+    }
+
+    public class StudentViewModel
+    {
+        public string StudentId { get; set; }
+
+        public string StudentName { get; set; }
+
+        public string StaffId { get; set; }
+
+        public string StaffName { get; set; }
+
+        public List<Student> Students { get; set; }
+
+        public int SelectedNoOfRows { get; set; }
+
+        public SelectList NoOfRows { get; set; }
+
+        public bool IsValid { get; set; }
+
+        public void GetAllStudents()
+        {
+            Students = new List<Student>();
+            Students.Add(new Student() { StudentId = "1", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "2", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "3", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "4", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "5", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "6", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "7", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "8", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "9", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "10", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "11", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "12", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "13", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "14", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "15", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "16", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "17", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "18", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "19", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "20", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "21", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "22", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "23", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "24", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "25", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "26", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "27", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "28", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "29", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "30", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "31", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "32", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "33", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "34", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "35", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "36", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "37", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "38", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "39", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "40", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "41", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "42", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "43", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "44", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "45", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "46", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "47", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "48", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "49", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "50", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "51", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "52", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "53", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "54", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "55", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "56", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "57", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "58", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "59", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "60", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "61", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "62", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "63", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "64", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "65", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "66", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "67", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "68", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "69", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "70", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "71", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "72", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "73", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "74", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "75", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "76", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "77", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "78", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "79", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "80", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "81", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "82", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "83", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "84", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "85", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "86", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "87", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "88", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "89", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "90", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "91", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "92", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "93", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "94", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "95", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "96", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "97", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "98", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "99", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "100", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "101", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "102", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "103", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "104", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "105", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "106", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "107", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "108", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "109", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "110", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "111", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "112", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "113", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "114", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "115", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "116", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "117", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "118", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "119", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "120", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "121", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "122", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "123", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "124", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "125", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "126", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "127", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "128", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "129", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "130", StudentName = "Avinash" });
+            Students.Add(new Student() { StudentId = "131", StudentName = "Mohammad Ali" });
+            Students.Add(new Student() { StudentId = "132", StudentName = "Ishaq" });
+            Students.Add(new Student() { StudentId = "133", StudentName = "Amir" });
+            Students.Add(new Student() { StudentId = "134", StudentName = "Dinesh" });
+            Students.Add(new Student() { StudentId = "135", StudentName = "Ramesh" });
+            Students.Add(new Student() { StudentId = "136", StudentName = "Suresh" });
+            Students.Add(new Student() { StudentId = "137", StudentName = "Atul" });
+            Students.Add(new Student() { StudentId = "138", StudentName = "Deepak" });
+            Students.Add(new Student() { StudentId = "139", StudentName = "Shailesh" });
+            Students.Add(new Student() { StudentId = "140", StudentName = "Avinash" });
+
+            foreach(var item in Students)
+            {
+                item.StaffId = (Convert.ToInt32(item.StudentId) * 10).ToString();
+                item.StaffName = "Staff_" + item.StudentName;
+            }
+
+        }
+
+        public void PopulateDD(int SelectedId = 10)
+        {
+            Dictionary<int, int> dic = new Dictionary<int, int>();
+            dic.Add(10, 10);
+            dic.Add(20, 20);
+            dic.Add(50, 50);
+            NoOfRows = new SelectList(dic, "Key", "Value", SelectedId);
+        }
+    }
+
+    public class StudentSearchCriteria
+    {
+        public string StudentId { get; set; }
+
+        public string StudentName { get; set; }
+
+        public int NoOfRows { get; set; }
+    }
+
+}
