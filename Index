@@ -1,0 +1,29 @@
+@model School.Controllers.StudentViewModel
+
+@using (Html.BeginForm("Index", "Home", FormMethod.Post, null))
+{
+    <div class="row" style="margin-top:20px; margin-top:20px;vertical-align:middle;">
+        <label>Student Id: </label> @Html.TextBoxFor(m => m.StudentId)
+    </div>
+    <div class="row" style="margin-top:20px; margin-top:20px;vertical-align:middle;">
+        <label>Student Name: </label> @Html.TextBoxFor(m => m.StudentName)
+    </div>
+    <div class="row" style="margin-top:20px; margin-top:20px;vertical-align:middle;">
+        <input type="submit" value="Search" />
+    </div>
+    <div class="row" style="margin-top:20px; margin-top:20px;vertical-align:middle;">
+        @if (Model.IsValid)
+        {
+            @Html.DropDownListFor(m => m.SelectedNoOfRows, Model.NoOfRows, new { onchange = "this.form.submit();" })
+        }
+        @Html.ActionLink("Export to Excel","ExportToExcel")
+    </div>
+
+}
+
+@if (Model.IsValid)
+{
+    <div class="row" style="margin-top:20px; margin-top:20px;vertical-align:middle;">
+        @Html.AjaxGrid(Url.Action("IndexGrid"))
+    </div>
+}
